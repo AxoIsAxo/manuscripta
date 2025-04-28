@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Manuscripta - Your Secure Writing Sanctuary{% endblock %}
+
+{% block content %}
+<div class="landing">
+    <h1>Manuscripta</h1>
+    <p>Your Words, Your Sanctuary. Secured Simply.</p>
+    <button id="start-writing-btn">Begin Writing</button>
+    <div id="loading-indicator" style="display: none;">Creating your space...</div>
+    <p class="small-print">No accounts needed. Just save your unique document link and password.</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('start-writing-btn').addEventListener('click', async () => {
+        const button = document.getElementById('start-writing-btn');
+        const loadingIndicator = document.getElementById('loading-indicator');
+
+        if (!button || !loadingIndicator) return; // Safety check
+
+        button.disabled = true;
+        loadingIndicator.style.display = 'block';
+
+        try {
+            const response = await fetch('{{ url_for("create_new_document") }}', {
+                method: 'POST',
+                headers: {
+                    // No 'Content-Type' needed for empty POST body often,
+                    // but explicit can be good practice if framework expects it.
+                    // 'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                // Try to get error message from server if available
+                let errorMsg = `HTTP error! status: ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    errorMsg = errorData.error || errorMsg;
+                } catch (e) { /* Ignore if response not JSON */ }
+                throw new Error(errorMsg);
+            }
+
+            const data = await response.json();
+            if (data.doc_id) {
+                window.location.href = `/write/${data.doc_id}`; // Redirect to the new doc
+            } else {
+                 throw new Error('Failed to get document ID from server.');
+            }
+        } catch (error) {
+            console.error('Error creating document:', error);
+            alert(`Could not create a new document: ${error.message || 'Please try again later.'}`);
+            button.disabled = false; // Re-enable button on error
+            loadingIndicator.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

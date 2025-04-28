@@ -1,0 +1,7 @@
+Flask>=2.0
+Flask-SQLAlchemy>=2.5
+psycopg2-binary # For PostgreSQL on Railway (Comment out/remove if using only SQLite locally)
+# OR use 'mysqlclient' if using MySQL
+python-dotenv>=0.19 # For loading .env file locally
+gunicorn>=20.1      # WSGI server for production (used by Railway via Procfile)
+Werkzeug>=2.0       # For password hashing (usually installed with Flask)

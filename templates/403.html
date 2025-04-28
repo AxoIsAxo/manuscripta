@@ -1,0 +1,15 @@
+{# templates/403.html #}
+{% extends "base.html" %}
+
+{% block title %}Access Forbidden{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <h1>403 - Access Forbidden</h1>
+    <p>Sorry, you don't have permission to access this page or perform this action.</p>
+     {% if error and error != 'You do not have permission to access this resource.' %}
+    <p><em>({{ error|escape }})</em></p>
+    {% endif %}
+    <p><a href="{{ url_for('index') }}">Go back to the Home Page</a></p>
+</div>
+{% endblock %}

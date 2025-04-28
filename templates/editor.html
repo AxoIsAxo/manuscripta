@@ -1,0 +1,136 @@
+{# templates/editor.html #}
+{% extends "base.html" %}
+
+{% block title %}Editing: {{ doc_id }}{% endblock %}
+
+{% block head_extra %}
+    {# Pass data to JavaScript #}
+    <script>
+        window.DOC_ID = "{{ doc_id }}";
+        window.IS_READ_ONLY = {{ 'true' if read_only else 'false' }};
+        window.NEEDS_PASSWORD_SET = {{ 'true' if needs_password_set else 'false' }};
+        window.IS_PRIVATE = {{ 'true' if doc.is_private else 'false' }}; // Initial state
+        // Pass initial content safely for JS to insert, handle None case
+        window.INITIAL_CONTENT = {{ (doc.content or '')|tojson|safe }};
+    </script>
+{% endblock %}
+
+{% block content %}
+<div class="editor-wrapper"> {# This now takes full height via body flex #}
+    <header class="editor-header">
+        <div class="logo-area">
+            <a href="{{ url_for('index') }}">Manuscripta</a> /
+            <span class="doc-id" title="Document ID (Save this!)">{{ doc_id }}</span>
+            <button id="copy-url-btn" type="button" title="Copy Document URL">Copy URL</button>
+        </div>
+        <div class="status-area">
+            <span id="save-status"></span> {# Status set by JS #}
+        </div>
+        <div class="controls-area">
+             {# Only show settings if not read-only (meaning has access) #}
+            {% if not read_only %}
+            <button id="settings-btn" type="button">Settings</button>
+            {% endif %}
+             {# Show unlock button only if read-only AND password has been set #}
+            {% if read_only and doc.password_hash %}
+            <button id="unlock-edit-btn" type="button">Unlock for Editing</button>
+            {% endif %}
+        </div>
+    </header>
+
+    {# Formatting Toolbar - Hide if read-only or need to set initial password #}
+    <div class="editor-toolbar" {% if read_only or needs_password_set %}style="display: none;"{% endif %}>
+         <select id="font-family-select" title="Font Family" {% if read_only or needs_password_set %}disabled{% endif %}>
+            {# Default option matches CSS base font for .editable-area #}
+            <option value="'Merriweather', serif" selected>Merriweather (Serif)</option>
+            <option value="'Lato', sans-serif">Lato (Sans-Serif)</option>
+            <option value="'Courier New', monospace">Courier New (Monospace)</option>
+            <option value="'Georgia', serif">Georgia (Serif)</option>
+            <option value="'Verdana', sans-serif">Verdana (Sans-Serif)</option>
+            <option value="">Default (Reset)</option> {# Option to remove specific font style #}
+         </select>
+
+         <select id="font-size-select" title="Font Size" {% if read_only or needs_password_set %}disabled{% endif %}>
+             {# Default option matches CSS base size for .editable-area #}
+            <option value="14px">14px</option>
+            <option value="16px" selected>16px</option>
+            <option value="18px">18px</option>
+            <option value="20px">20px</option>
+            <option value="24px">24px</option>
+            <option value="">Default (Reset)</option> {# Option to remove size style #}
+         </select>
+
+         <button id="format-bold-btn" type="button" title="Bold (Ctrl+B)" {% if read_only or needs_password_set %}disabled{% endif %}><b>B</b></button>
+         <button id="format-italic-btn" type="button" title="Italic (Ctrl+I)" {% if read_only or needs_password_set %}disabled{% endif %}><i>I</i></button>
+         {# Add more buttons here later #}
+    </div>
+
+
+    {# Initial Password Setup - Shown only if password hash is null and user has access #}
+    {% if needs_password_set and not read_only %}
+    <div id="set-password-section" class="initial-setup">
+        <h2>Secure Your Manuscript</h2>
+        <p>This document doesn't have a password yet. Set one now to protect your work.</p>
+        <p><strong>Important:</strong> Save your password and the document URL (<button id="copy-url-btn-2" type="button">Copy URL</button>) securely. <strong>There is no recovery if you lose them.</strong></p>
+        <form id="set-password-form">
+            <input type="password" id="new-password" required minlength="8" placeholder="Choose a Strong Password (min 8 chars)">
+            <button type="submit">Set Password & Secure</button>
+        </form>
+        <p id="set-password-error" class="error"></p>
+    </div>
+    {% endif %}
+
+    {# Password Prompt for Unlocking Edit in Public Mode #}
+    {% if read_only and doc.password_hash %} {# Only show if read_only AND password exists #}
+     <div id="unlock-prompt-section" class="password-container" style="display: none;"> {# Initially hidden #}
+        <h2>Unlock for Editing</h2>
+        <p>Enter the password for <code>{{ doc_id }}</code> to enable editing.</p>
+        <form id="unlock-password-form">
+            <input type="password" id="unlock-password" required placeholder="Document Password">
+            <button type="submit">Unlock</button>
+        </form>
+        <p id="unlock-error-message" class="error"></p>
+        <button id="cancel-unlock-btn" type="button">Cancel</button>
+    </div>
+    {% endif %}
+
+
+    {# Settings Modal/Panel - Initially Hidden #}
+    <div id="settings-panel" class="settings-panel" style="display: none;">
+        <h3>Document Settings</h3>
+        <p>Document ID: <code>{{ doc_id }}</code> <button id="copy-url-btn-3" type="button">Copy URL</button></p>
+        <div class="setting-item">
+            <label for="privacy-toggle">
+                {# Disable toggle if password is not yet set #}
+                <input type="checkbox" id="privacy-toggle" {% if doc.is_private %}checked{% endif %} {% if not doc.password_hash %}disabled title="Set a password first"{% endif %}>
+                Private (Requires password to view)
+            </label>
+            <p class="small-print">If unchecked, anyone with the URL can view (but not edit without the password).</p>
+            <p id="privacy-error" class="error"></p>
+        </div>
+         {# Add more settings here later #}
+        <button id="close-settings-btn" type="button">Close</button>
+    </div>
+
+
+    {# The Main Editor Area - DIV #}
+    {# This div will grow/scroll within the flex container #}
+    <div class="editor-main">
+        <div id="editor-content"
+             class="editable-area"
+             {# Set contenteditable based on server-side logic #}
+             contenteditable="{{ 'true' if not read_only and not needs_password_set else 'false' }}"
+             spellcheck="true"
+             role="textbox"
+             aria-multiline="true"
+             placeholder="Start writing your masterpiece..."
+             ></div> {# Content inserted by JS #}
+    </div>
+
+</div> {# End editor-wrapper #}
+{% endblock %}
+
+{% block scripts %}
+    {# Load editor specific JS #}
+    <script src="{{ url_for('static', filename='js/editor.js') }}"></script>
+{% endblock %}

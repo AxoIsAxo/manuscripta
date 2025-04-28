@@ -1,0 +1,295 @@
+/* static/css/style.css */
+:root {
+    --bg-color: #f8f8f4; /* Off-white / Parchment */
+    --text-color: #333;
+    --primary-color: #a08d5c; /* Muted Gold/Bronze */
+    --secondary-color: #5a5a5a;
+    --border-color: #e0e0d8;
+    --focus-ring-color: rgba(160, 141, 92, 0.5); /* Semi-transparent primary */
+    --error-color: #c0392b;
+
+    --font-serif: 'Merriweather', serif;
+    --font-sans: 'Lato', sans-serif;
+}
+
+/* Basic Reset & Body */
+html {
+    box-sizing: border-box;
+    height: 100%;
+}
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-sans);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+h1, h2, h3 {
+    font-family: var(--font-serif);
+    color: var(--primary-color);
+    margin-bottom: 0.5em;
+    font-weight: 700;
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+button {
+    font-family: var(--font-sans);
+    padding: 8px 15px;
+    border: 1px solid var(--primary-color);
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+button:hover {
+    background-color: #8a794e;
+    border-color: #8a794e;
+}
+button:focus, button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring-color);
+}
+button:disabled {
+    background-color: #ccc;
+    border-color: #ccc;
+    color: #888;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+button[type="button"]:not(.primary-action) {
+     background-color: transparent;
+     color: var(--primary-color);
+     border: 1px solid var(--border-color);
+}
+button[type="button"]:not(.primary-action):hover {
+    background-color: #eee;
+    border-color: var(--secondary-color);
+    color: #333;
+}
+
+input[type="text"],
+input[type="password"],
+textarea,
+select {
+    font-family: var(--font-sans);
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background-color: #fff;
+}
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--focus-ring-color);
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.small-print {
+    font-size: 0.85rem;
+    color: var(--secondary-color);
+    margin-top: 1em;
+}
+.error {
+    color: var(--error-color);
+    font-size: 0.9rem;
+    margin-top: 5px;
+    font-weight: bold;
+}
+
+/* Landing Page Specific */
+.landing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    text-align: center;
+    padding: 50px 20px;
+}
+.landing h1 { font-size: 3rem; margin-bottom: 0.2em; }
+.landing p { font-size: 1.2rem; color: var(--secondary-color); margin-bottom: 1.5em; max-width: 600px; }
+#start-writing-btn { padding: 12px 25px; font-size: 1.1rem; margin-bottom: 1em; }
+#loading-indicator { color: var(--secondary-color); font-style: italic; }
+
+/* Password Prompt & Initial Setup */
+.password-container, .initial-setup {
+    max-width: 450px;
+    margin: 50px auto;
+    padding: 30px 40px;
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    text-align: center;
+}
+.password-container h2, .initial-setup h2 { margin-top: 0; margin-bottom: 1em; }
+.password-container p, .initial-setup p { margin-bottom: 1em; color: var(--secondary-color); line-height: 1.5; }
+.password-container input[type="password"],
+.initial-setup input[type="password"] { margin-bottom: 15px; }
+.password-container code, .initial-setup code { background-color: #eee; padding: 2px 5px; border-radius: 3px; font-size: 0.9em; word-break: break-all; }
+.initial-setup strong { color: var(--error-color); }
+.password-container form, .initial-setup form { margin-top: 1.5em; }
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+
+
+/* Editor Layout */
+.editor-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+    margin: 0;
+    max-width: none;
+    padding: 0;
+    background-color: var(--bg-color);
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 25px;
+    background-color: #fff;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+.editor-header .logo-area { font-family: var(--font-serif); font-size: 1.1rem; display: flex; align-items: center; gap: 5px; }
+.editor-header .doc-id { font-family: monospace; font-size: 0.9rem; background-color: #eee; padding: 3px 6px; border-radius: 3px; margin-left: 5px; color: var(--secondary-color); }
+.editor-header .status-area { font-size: 0.85rem; color: var(--secondary-color); min-width: 150px; text-align: center; font-style: italic; flex-grow: 1; margin: 0 15px; }
+.editor-header .controls-area { display: flex; align-items: center; gap: 10px; }
+#copy-url-btn, #copy-url-btn-2, #copy-url-btn-3 { background: none; border: none; color: var(--primary-color); padding: 0 5px; font-size: 0.8em; vertical-align: middle; cursor: pointer; margin-left: 2px; }
+#copy-url-btn:hover, #copy-url-btn-2:hover, #copy-url-btn-3:hover { text-decoration: underline; }
+
+/* Editor Toolbar */
+.editor-toolbar {
+    display: flex;
+    align-items: center;
+    padding: 8px 25px;
+    background-color: #f0f0ea;
+    border-bottom: 1px solid var(--border-color);
+    gap: 10px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.editor-toolbar select,
+.editor-toolbar button {
+    padding: 5px 8px;
+    font-size: 0.9rem;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    cursor: pointer;
+    height: 32px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    vertical-align: middle;
+}
+.editor-toolbar select {
+    font-family: var(--font-sans);
+     min-width: 120px;
+     appearance: none;
+     background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23555%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+     background-repeat: no-repeat;
+     background-position: right 8px top 50%;
+     background-size: .65em auto;
+     padding-right: 25px;
+     color: var(--text-color);
+}
+.editor-toolbar select:disabled { background-color: #eee; cursor: not-allowed; opacity: 0.7; }
+.editor-toolbar button { min-width: 35px; text-align: center; font-family: var(--font-sans); color: var(--text-color); background-color: #fff; border-color: #ccc; }
+.editor-toolbar button:hover:not(:disabled) { border-color: #aaa; background-color: #f5f5f5; }
+.editor-toolbar button:active:not(:disabled) { background-color: #eee; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
+.editor-toolbar button b { font-weight: bold; }
+.editor-toolbar button i { font-style: italic; }
+
+/* Editor Main Area */
+.editor-main {
+    flex-grow: 1;
+    display: flex;
+    overflow-y: auto; /* Scroll the content area */
+    background-color: var(--bg-color);
+    padding: 0;
+}
+
+/* Styles for the contenteditable DIV */
+.editable-area {
+    flex-grow: 1;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    padding: 40px 60px;
+    /* --- DEFAULT STYLES --- */
+    font-family: var(--font-serif); /* Default Font */
+    font-size: 16px;             /* Default Size */
+    line-height: 1.7;
+    color: var(--text-color);
+    /* ----------------------- */
+    width: 100%;
+    min-height: 100%;
+    box-sizing: border-box;
+    cursor: text;
+}
+.editable-area:focus { /* No specific focus needed */ }
+.editable-area[contenteditable="false"] { background-color: #f0f0ea; cursor: default; }
+.editable-area[placeholder]:empty::before { content: attr(placeholder); color: #aaa; pointer-events: none; display: block; }
+.editable-area[contenteditable="false"][placeholder]:empty::before { content: ''; }
+
+/* Styling for elements INSIDE editable area */
+.editable-area b, .editable-area strong { font-weight: bold; } /* Default bold */
+.editable-area i, .editable-area em { font-style: italic; } /* Default italic */
+.editable-area p { margin: 0 0 1em 0; } /* Basic paragraph spacing */
+.editable-area div { margin: 0 0 1em 0; } /* Treat divs like paragraphs */
+/* Spans with inline styles will override defaults */
+
+
+/* Settings Panel */
+/* ... Keep existing styles ... */
+.settings-panel { position: fixed; top: 60px; right: 20px; width: 320px; background-color: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 20px 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); z-index: 100; display: none; }
+.settings-panel h3 { margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px; }
+.setting-item { margin-bottom: 20px; }
+.setting-item label { display: flex; align-items: center; cursor: pointer; font-size: 0.95rem; margin-bottom: 5px; }
+.setting-item input[type="checkbox"] { margin-right: 10px; width: auto; height: 16px; width: 16px; accent-color: var(--primary-color); }
+.setting-item input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.6; }
+.setting-item .small-print { margin-top: 5px; margin-bottom: 0; line-height: 1.4; }
+.settings-panel #close-settings-btn { margin-top: 10px; display: block; margin-left: auto; }
+
+/* Error Pages */
+/* ... Keep existing styles ... */
+.error-page { text-align: center; margin: 50px auto; padding: 30px; max-width: 600px; }
+.error-page h1 { color: var(--error-color); font-size: 2.5rem; }
+.error-page p { font-size: 1.1rem; color: var(--secondary-color); }
+.error-page em { font-size: 0.9rem; color: #999; display: inline-block; margin-top: 5px; }
+
+/* Utility */
+.hidden { display: none !important; }
