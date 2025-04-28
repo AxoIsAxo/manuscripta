@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         triggerSave(); // Content potentially changed
     };
 
-    // Helper to apply inline style TO SELECTION using Range API
+    // Helper to apply inline style TO SELECTION using Range API (corrected version)
     const applyStyleToSelection = (styleProperty, styleValue) => {
         if (!editorContent || editorContent.getAttribute('contenteditable') !== 'true') return;
 
@@ -78,34 +78,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (e) {
                 console.error("Error applying style:", e);
-                alert("Could not apply style to the current selection. It might be too complex.");
+                alert("Could not apply style to the current selection. It might be too complex (e.g., across paragraphs). Try selecting simpler text.");
                 return; // Stop if failed
             }
         } else {
              // ** REMOVING STYLE (Default/Reset selected) **
-             // This is more complex. `removeFormat` is blunt. A better way
-             // involves finding the relevant parent span and removing the specific style.
-             // Let's try a combination: removeFormat first, then attempt cleanup.
-             document.execCommand('removeFormat', false, null); // Remove B, I, etc.
+             // Use 'removeFormat' as a blunt tool for now.
+             // It removes B, I, U, Strikethrough, and potentially font/color/size depending on browser.
+             document.execCommand('removeFormat', false, null);
+             // Attempt to remove specific inline style attribute as well (might help sometimes)
+             document.execCommand('styleWithCSS', false, true); // Ensure execCommand uses style attributes
+             // The following might not work reliably across browsers for specific properties.
+             // document.execCommand('fontName', false, ''); // Attempt to reset font family
+             // document.execCommand('fontSize', false, ''); // Attempt to reset font size (often uses numbers 1-7)
+             document.execCommand('styleWithCSS', false, false); // Reset back if needed
 
-             // More targeted removal (attempt):
-             // Find nodes within the range and remove the specific style property
-             // This requires traversing nodes and is complex to do correctly for all cases.
-             // Simple version: Use removeFormat for now. User might need to reapply other styles.
-             console.warn("Resetting style uses 'removeFormat', which might remove other styles too.");
-
-             // ---- More Advanced Removal (Conceptual) ----
-             // const commonAncestor = range.commonAncestorContainer;
-             // const nodes = []; // Get all nodes within the range
-             // nodes.forEach(node => {
-             //    if (node.nodeType === Node.ELEMENT_NODE && node.style[styleProperty]) {
-             //       node.style[styleProperty] = null; // Remove specific style
-             //       // If span becomes empty of styles, potentially unwrap it
-             //       if (!node.getAttribute('style')) { /* unwrap logic */ }
-             //    } else if (node.nodeType === Node.ELEMENT_NODE && node.parentNode.style[styleProperty]) {
-             //         // Need to potentially split parent node, very complex
-             //    }
-             // });
+             console.warn("Resetting style uses 'removeFormat', which might remove multiple styles.");
         }
 
 
@@ -139,11 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ content: contentToSave }) // Send HTML
             });
 
-             // ... (keep existing response handling logic) ...
              if (!response.ok) {
                  if (response.status === 403) {
                     if (saveStatus) saveStatus.textContent = 'Error: Access denied.';
-                    alert("Your editing session might have expired. Please copy any unsaved work and refresh the page.");
+                    alert("Session expired. Please copy work & refresh.");
                  } else {
                     const errorData = await response.json().catch(() => ({}));
                     throw new Error(`Save failed: ${response.status} ${errorData.error || ''}`);
@@ -211,7 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial Password Setting
     if (setPasswordForm) {
         setPasswordForm.addEventListener('submit', async (e) => {
-            // ... (keep existing logic - it correctly enables contenteditable and the toolbar) ...
              e.preventDefault();
             const password = newPasswordInput ? newPasswordInput.value : '';
             if (setPasswordError) setPasswordError.textContent = '';
@@ -226,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (setPasswordSection) setPasswordSection.style.display = 'none';
                     if (editorContent) editorContent.setAttribute('contenteditable', 'true');
                     if (editorToolbar) editorToolbar.style.display = 'flex';
-                    editorToolbar.querySelectorAll('button, select').forEach(el => el.disabled = false);
+                    editorToolbar.querySelectorAll('button, select').forEach(el => el.disabled = false); // Enable toolbar
 
                     window.NEEDS_PASSWORD_SET = false;
                     window.IS_PRIVATE = true;
@@ -246,54 +232,139 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Settings Panel Logic (remains the same)
-    if (settingsBtn && settingsPanel && closeSettingsBtn) { /* ... keep logic ... */ }
-    if (privacyToggle) {
-        privacyToggle.addEventListener('change', async () => { /* ... keep logic ... */ });
+    // Settings Panel Logic (Verified Fix)
+    // console.log("Settings Button Element:", settingsBtn); // Debugging
+    // console.log("Settings Panel Element:", settingsPanel); // Debugging
+
+    if (settingsBtn && settingsPanel) { // Ensure both elements exist
+        settingsBtn.addEventListener('click', (e) => {
+            // console.log("Settings button clicked!"); // Debugging
+            e.stopPropagation(); // Prevent click propagating to document
+            const isHidden = settingsPanel.style.display === 'none' || settingsPanel.style.display === '';
+            settingsPanel.style.display = isHidden ? 'block' : 'none';
+            // console.log("Settings panel display set to:", settingsPanel.style.display); // Debugging
+        });
+
+        if (closeSettingsBtn) {
+             closeSettingsBtn.addEventListener('click', () => {
+                 // console.log("Close settings button clicked!"); // Debugging
+                 settingsPanel.style.display = 'none';
+             });
+        } else {
+             // console.warn("Close settings button not found!"); // Debugging
+        }
+
+         // Close if clicking outside the panel and button
+         document.addEventListener('click', (event) => {
+             if (settingsPanel.style.display === 'block') { // Only act if panel is open
+                 if (!settingsPanel.contains(event.target) && !settingsBtn.contains(event.target)) {
+                     // console.log("Clicked outside settings panel, closing."); // Debugging
+                     settingsPanel.style.display = 'none';
+                 }
+             }
+         });
+
+    } else {
+        if(!settingsBtn) console.error("Settings button element not found!");
+        if(!settingsPanel) console.error("Settings panel element not found!");
     }
-    // Copy URL Buttons (remains the same)
+
+
+    // Privacy Toggle Logic
+    if (privacyToggle) {
+        privacyToggle.addEventListener('change', async () => {
+            const is_private = privacyToggle.checked;
+            if(privacyError) privacyError.textContent = '';
+            privacyToggle.disabled = true; // Disable while processing
+            try {
+                const response = await fetch(`/api/set_privacy/${window.DOC_ID}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_private: is_private }) });
+                const data = await response.json();
+                if (!response.ok) {
+                    privacyToggle.checked = !is_private; // Revert UI
+                    if (response.status === 400 && data.error && data.error.includes('Set a password')) { if (privacyError) privacyError.textContent = "Set a password first."; }
+                    else if (response.status === 403) { if (privacyError) privacyError.textContent = "Error: Access Denied."; alert("Session expired."); }
+                    else { if (privacyError) privacyError.textContent = data.error || 'Failed to update privacy.'; }
+                } else {
+                    window.IS_PRIVATE = data.is_private;
+                    if (saveStatus) saveStatus.textContent = `Privacy set to ${data.is_private ? 'Private' : 'Public'}`;
+                }
+            } catch (error) {
+                console.error("Error setting privacy:", error);
+                if (privacyError) privacyError.textContent = 'A network error occurred.';
+                privacyToggle.checked = !is_private;
+            } finally {
+                 // Re-enable only if password is set
+                 const hasPassword = !window.NEEDS_PASSWORD_SET;
+                 privacyToggle.disabled = !hasPassword;
+            }
+        });
+    }
+
+
+    // Copy URL Buttons
     copyUrlBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => { /* ... keep logic ... */ });
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                const originalText = btn.dataset.originalText || btn.textContent;
+                btn.dataset.originalText = originalText;
+                btn.textContent = 'Copied!';
+                btn.disabled = true;
+                setTimeout(() => { btn.textContent = originalText; btn.disabled = false; }, 1500);
+            }).catch(err => { console.error('Failed to copy URL: ', err); alert('Failed to copy URL automatically.'); });
+        });
     });
-    // Unlock Editing in Public Mode (remains the same)
-    if (unlockEditBtn && unlockPromptSection) { /* ... keep logic ... */ }
-    if (cancelUnlockBtn && unlockPromptSection) { /* ... keep logic ... */ }
+
+    // Unlock Editing in Public Mode
+    if (unlockEditBtn && unlockPromptSection) {
+        unlockEditBtn.addEventListener('click', () => {
+            unlockPromptSection.style.display = 'block';
+            unlockEditBtn.style.display = 'none';
+            if(unlockPasswordInput) unlockPasswordInput.focus();
+        });
+    }
+    if (cancelUnlockBtn && unlockPromptSection) {
+         cancelUnlockBtn.addEventListener('click', () => {
+            unlockPromptSection.style.display = 'none';
+            if (unlockEditBtn) unlockEditBtn.style.display = 'inline-block';
+            if(unlockErrorMessage) unlockErrorMessage.textContent = '';
+            if(unlockPasswordInput) unlockPasswordInput.value = '';
+        });
+    }
     if (unlockPasswordForm) {
-        unlockPasswordForm.addEventListener('submit', async (e) => { /* ... keep logic ... */ });
+        unlockPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = unlockPasswordInput.value;
+            if (unlockErrorMessage) unlockErrorMessage.textContent = '';
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            if(submitButton) submitButton.disabled = true;
+             try {
+                const response = await fetch(`/api/check_password/${window.DOC_ID}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: password }) });
+                const data = await response.json();
+                if (response.ok && data.success) { window.location.reload(); }
+                else { if (unlockErrorMessage) unlockErrorMessage.textContent = data.error || 'Incorrect password.'; if(unlockPasswordInput) { unlockPasswordInput.focus(); unlockPasswordInput.select(); } }
+            } catch (error) { console.error('Error checking password:', error); if (unlockErrorMessage) unlockErrorMessage.textContent = 'An error occurred.'; }
+            finally { if(submitButton) submitButton.disabled = false; }
+        });
     }
 
     // --- Toolbar Event Listeners ---
     if (fontFamilySelect && editorContent) {
         fontFamilySelect.addEventListener('change', (event) => {
-             // Apply style TO SELECTION
              applyStyleToSelection('fontFamily', event.target.value);
-             // Optionally reset select back to a default/placeholder value
-             // event.target.selectedIndex = 0;
         });
     }
-
     if (fontSizeSelect && editorContent) {
         fontSizeSelect.addEventListener('change', (event) => {
-             // Apply style TO SELECTION
              applyStyleToSelection('fontSize', event.target.value);
-             // Optionally reset select back to a default/placeholder value
-             // event.target.selectedIndex = 0;
         });
     }
-
-    // Bold/Italic still use execCommand on selection
     if (formatBoldBtn) {
-        formatBoldBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            applyExecCommand('bold');
-        });
+        formatBoldBtn.addEventListener('click', (e) => { e.preventDefault(); applyExecCommand('bold'); });
     }
-
     if (formatItalicBtn) {
-        formatItalicBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            applyExecCommand('italic');
-        });
+        formatItalicBtn.addEventListener('click', (e) => { e.preventDefault(); applyExecCommand('italic'); });
     }
 
     // Keyboard shortcuts
@@ -302,15 +373,11 @@ document.addEventListener('DOMContentLoaded', () => {
              if (editorContent.getAttribute('contenteditable') !== 'true') return;
             if (event.ctrlKey || event.metaKey) {
                 let handled = false;
-                 // Browser default B/I is fine with execCommand usually
+                 // Ctrl+S for save
                  if (event.key === 's' || event.key === 'S') {
-                    saveDocument(); // Manual save
-                    handled = true;
-                    if(saveStatus) saveStatus.textContent = 'Saving...';
+                    saveDocument(); handled = true; if(saveStatus) saveStatus.textContent = 'Saving...';
                  }
-                if (handled) {
-                    event.preventDefault();
-                }
+                if (handled) { event.preventDefault(); }
             }
         });
     }

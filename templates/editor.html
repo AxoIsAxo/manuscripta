@@ -29,7 +29,7 @@
         <div class="controls-area">
              {# Only show settings if not read-only (meaning has access) #}
             {% if not read_only %}
-            <button id="settings-btn" type="button">Settings</button>
+            <button id="settings-btn" type="button">Settings</button> {# ID for JS #}
             {% endif %}
              {# Show unlock button only if read-only AND password has been set #}
             {% if read_only and doc.password_hash %}
@@ -52,12 +52,12 @@
 
          <select id="font-size-select" title="Font Size" {% if read_only or needs_password_set %}disabled{% endif %}>
              {# Default option matches CSS base size for .editable-area #}
+             <option value="">Default (Reset)</option> {# Option to remove size style #}
             <option value="14px">14px</option>
             <option value="16px" selected>16px</option>
             <option value="18px">18px</option>
             <option value="20px">20px</option>
             <option value="24px">24px</option>
-            <option value="">Default (Reset)</option> {# Option to remove size style #}
          </select>
 
          <button id="format-bold-btn" type="button" title="Bold (Ctrl+B)" {% if read_only or needs_password_set %}disabled{% endif %}><b>B</b></button>
@@ -96,7 +96,7 @@
 
 
     {# Settings Modal/Panel - Initially Hidden #}
-    <div id="settings-panel" class="settings-panel" style="display: none;">
+    <div id="settings-panel" class="settings-panel" style="display: none;"> {# ID for JS #}
         <h3>Document Settings</h3>
         <p>Document ID: <code>{{ doc_id }}</code> <button id="copy-url-btn-3" type="button">Copy URL</button></p>
         <div class="setting-item">
@@ -109,7 +109,7 @@
             <p id="privacy-error" class="error"></p>
         </div>
          {# Add more settings here later #}
-        <button id="close-settings-btn" type="button">Close</button>
+        <button id="close-settings-btn" type="button">Close</button> {# ID for JS #}
     </div>
 
 
