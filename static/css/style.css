@@ -293,3 +293,13 @@ input:focus, textarea:focus, select:focus {
 
 /* Utility */
 .hidden { display: none !important; }
+
+/* static/css/custom_fonts.css */
+
+@font-face {
+    font-family: 'Tauwrite'; /* This is the name you'll use in CSS and HTML */
+    src: url('../fonts/Tauwrite-Regular.ttf') format('ttf'); /* Path relative to this CSS file */
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap; /* Improves perceived performance */
+}
