@@ -1,0 +1,9 @@
+/* static/css/custom_fonts.css */
+
+@font-face {
+    font-family: 'Tauwrite';
+    src: url('../fonts/Tauwrite-Regular.ttf') format('ttf'); /* Path relative to THIS CSS file */
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
